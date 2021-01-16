@@ -1,16 +1,31 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import numpy as np
+from scipy.sparse import csr_matrix
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def L_U(matrix):
+    matrix = matrix.A
+    n = matrix.shape[0]
+    L = np.eye(n)
+    U = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            if i <= j:
+                U[i][j] = matrix[i][j] - get_sum_i(L, U, i, j)
+            else:
+                L[i][j] = (matrix[i][j] - get_sum_j(L, U, i, j)) / U[j][j]
+    return csr_matrix(L), csr_matrix(U)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+def get_sum_i(L, U, i, j):
+    ans = 0
+    for k in range(0, i):
+        ans += L[i][k] * U[k][j]
+    return ans
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+def get_sum_j(L, U, i, j):
+    ans = 0
+    for k in range(0, j):
+        ans += L[i][k] * U[k][j]
+    return ans
+
