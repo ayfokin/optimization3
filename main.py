@@ -55,6 +55,34 @@ def gauss_method(A, F):
     return x
 
 
+def create_gilbert_matrix(k):
+    a = []
+    for i in range(k):
+        a.append([])
+        for j in range(k):
+            a[i].append(1 / (i + j + 1))
+    return a
+
+
+def create_f(A, x):
+    length = len(x)
+    F = [0 for i in range(length)]
+    for i in range(length):
+        for j in range(A.indptr[i], A.indptr[i + 1]):
+            index = A.indices[j]
+            a_j = A.data[j]
+            F[i] += a_j * x[index]
+    return F
+
+
+def determinant(A):
+    L, U = L_U(A)
+    det = 1
+    for i in U.indptr[:-1]:
+        det *= U.data[i]
+    return det
+
+
 a = csr_matrix(np.array([[10, 6, 2, 0], [5, 1, -2, 4], [3, 5, 1, -1], [0, 6, -2, 2]]))
 L, U = L_U(a)
 print(L.A)
@@ -68,3 +96,16 @@ print(L.A)
 print(U.A)
 print(A)
 print(gauss_method(A, F))
+for k in range(3, 100):
+    print('Размер матрицы Гильберта: ', k)
+    x = [i + 1 for i in range(k)]
+    A = create_gilbert_matrix(k)
+    print('Матрица A: ', '\n', A)
+    A = csr_matrix(A)
+    det = determinant(A)
+    print('Определитель: ', det)
+    if det == 0:
+        print('Определитель равен нулю')
+    F = create_f(A, x)
+    print('Матрица F: ', '\n', F)
+    print('Матрица X: ', '\n', gauss_method(A, F))
