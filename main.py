@@ -83,6 +83,10 @@ def determinant(A):
     return det
 
 
+def MSE(x_real, x_produced, k):
+    return np.linalg.norm(np.array(x_real) - np.array(x_produced)) / k
+
+
 a = csr_matrix(np.array([[10, 6, 2, 0], [5, 1, -2, 4], [3, 5, 1, -1], [0, 6, -2, 2]]))
 L, U = L_U(a)
 print(L.A)
@@ -96,16 +100,22 @@ print(L.A)
 print(U.A)
 print(A)
 print(gauss_method(A, F))
-for k in range(3, 100):
+#"Исследование" работы метода при использовании матриц Гильберта
+for k in range(3, 20):
     print('Размер матрицы Гильберта: ', k)
     x = [i + 1 for i in range(k)]
     A = create_gilbert_matrix(k)
-    print('Матрица A: ', '\n', A)
+    rangA = np.linalg.matrix_rank(A)
     A = csr_matrix(A)
-    det = determinant(A)
-    print('Определитель: ', det)
-    if det == 0:
-        print('Определитель равен нулю')
-    F = create_f(A, x)
+    F = np.array(create_f(A, x))
+    AF = np.concatenate([A.A, F.reshape(k, 1)], axis=1)
+    rangAF = np.linalg.matrix_rank(AF)
+    if rangA != rangAF:
+        print('Система несовместна!')
+        continue
+    x1 = gauss_method(A, F)
+    print('Матрица A: ', '\n', A.A)
     print('Матрица F: ', '\n', F)
-    print('Матрица X: ', '\n', gauss_method(A, F))
+    print('Матрица X: ', '\n', x1)
+    print('MSE = ', MSE(x, x1, k))
+    print('===========================================================================================')
