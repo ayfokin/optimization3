@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from scipy.sparse import csr_matrix
 
 
@@ -64,6 +65,18 @@ def create_gilbert_matrix(k):
     return a
 
 
+def create_matrix(k):
+    a = []
+    for i in range(k):
+        a.append([])
+        for j in range(k):
+            element = random.randrange(-4, 1, 1)
+            a[i].append(element)
+    for i in range(k):
+        a[i][i] = -(sum(a[i]) - a[i][i]) + 10 ** (-k)
+    return a
+
+
 def create_f(A, x):
     length = len(x)
     F = [0 for i in range(length)]
@@ -105,6 +118,26 @@ for k in range(3, 20):
     print('Размер матрицы Гильберта: ', k)
     x = [i + 1 for i in range(k)]
     A = create_gilbert_matrix(k)
+    rangA = np.linalg.matrix_rank(A)
+    A = csr_matrix(A)
+    F = np.array(create_f(A, x))
+    AF = np.concatenate([A.A, F.reshape(k, 1)], axis=1)
+    rangAF = np.linalg.matrix_rank(AF)
+    if rangA != rangAF:
+        print('Система несовместна!')
+        continue
+    x1 = gauss_method(A, F)
+    print('Матрица A: ', '\n', A.A)
+    print('Матрица F: ', '\n', F)
+    print('Матрица X: ', '\n', x1)
+    print('MSE = ', MSE(x, x1, k))
+    print('===========================================================================================')
+
+
+for k in range(3, 20):
+    print('Размер матрицы: ', k)
+    x = [i + 1 for i in range(k)]
+    A = create_matrix(k)
     rangA = np.linalg.matrix_rank(A)
     A = csr_matrix(A)
     F = np.array(create_f(A, x))
