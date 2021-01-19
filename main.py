@@ -32,27 +32,37 @@ def get_sum_j(L, U, i, j):
 
 
 def gauss_method(A, F):
-    length = A.shape[0]
     L, U = L_U(A)
-    y = [0 for i in range(length)]
-    for i in range(length):
-        tmp = F[i]
-        for j in range(L.indptr[i], L.indptr[i + 1]):
-            index = L.indices[j]
-            l_j = L.data[j]
-            tmp -= y[index] * l_j
-            if j == L.indptr[i + 1] - 1:
-                y[index] = tmp / l_j
+    y = up_to_down_gauss(L, F)
+    x = down_to_up_gauss(U, y)
+    return x
+
+
+def up_to_down_gauss(initial, result):
+    length = initial.shape[0]
     x = [0 for i in range(length)]
-    length = len(U.indptr) - 1
+    for i in range(length):
+        tmp = result[i]
+        for j in range(initial.indptr[i], initial.indptr[i + 1]):
+            index = initial.indices[j]
+            i_j = initial.data[j]
+            tmp -= x[index] * i_j
+            if j == initial.indptr[i + 1] - 1:
+                x[index] = tmp / i_j
+    return x
+
+
+def down_to_up_gauss(initial, result):
+    length = initial.shape[0]
+    x = [0 for i in range(length)]
     for i in range(length, 0, -1):
-        tmp = y[i - 1]
-        for j in range(U.indptr[i] - 1, U.indptr[i - 1] - 1, -1):
-            index = U.indices[j]
-            u_j = U.data[j]
-            tmp -= x[index] * u_j
-            if j == U.indptr[i - 1]:
-                x[index] = tmp / u_j
+        tmp = result[i - 1]
+        for j in range(initial.indptr[i] - 1, initial.indptr[i - 1] - 1, -1):
+            index = initial.indices[j]
+            i_j = initial.data[j]
+            tmp -= x[index] * i_j
+            if j == initial.indptr[i - 1]:
+                x[index] = tmp / i_j
     return x
 
 
@@ -152,3 +162,8 @@ for k in range(3, 20):
     print('Матрица X: ', '\n', x1)
     print('MSE = ', MSE(x, x1, k))
     print('===========================================================================================')
+B = csr_matrix(np.array([[1, 3], [5, 7]]))
+L, U = L_U(B)
+print(L.A)
+print(U.A)
+print(gauss_method(B, np.eye(B.shape[0])))
